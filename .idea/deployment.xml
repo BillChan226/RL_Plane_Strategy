@@ -5,7 +5,7 @@
       <paths name="tete">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/tete/work/RLP2021" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
