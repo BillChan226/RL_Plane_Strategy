@@ -28,11 +28,24 @@ conn, addr = s.accept()
 counter = 0
 while True:
     # 把客服端发送过来的数据又转发回去
-    data = conn.recv(BufferSize)
-    print("Received from %s: %s" % (addr, data.decode('gb2312')))
-    counter += 1
-    conn.sendall('I got it! {}'.format(counter).encode('gb2312'))
-    time.sleep(5)
+    #data = conn.recv(BufferSize)
+    #print("Received from %s: %s" % (addr, data.decode('gb2312')))
+    #conn.sendall('I got it!'.encode('gb2312'))
+    #time.sleep(5)
+    #a = [1,2,3,4,5,6,7]
+    action = '1' + '@' + str(0.5) + ',' + str(0.5) + ',' + str(0.5) + ',' + str(0.5) + ',' + str(0.5) + ',' + str(0.5) + ',' + str(0.5) + ',' + str(0.5)
+    #print(action)
+    conn.sendall(action.encode('gb2312'))
+    print('successfully send action to client')
+    next_obserstr = conn.recv(BufferSize)
+    #next_obserstr = data.decode('gb2312')
+    #print("Received from %s: %s" % (self.addr, data.decode('gb2312')))
+    print('next_obserstr', next_obserstr)
+    #full_next_obs, next_ourplane, _, _, _ = self.obs_parser(next_obserstr)
+    #rwd = self.reward(next_obserstr)
+    #done = 1 if next_ourplane[2] < 0 else 0
+    # 关闭客户端连接
+    # conn.colse()
 
     # 关闭客户端连接
     # conn.colse()
