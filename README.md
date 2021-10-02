@@ -1,1 +1,2 @@
 # RL_Plane_Strategy
+Basic Reinforcement Learning is premeditated to help us solve the 2v2 combat scenario in DCS world environment. For the RL baselines, we select the OpenAI [Spinning Up](https://spinningup.openai.com/en/latest/) unit, which is a decoupled, open-source and fathomable package developed for ease of design specific RL algorithm for our characterized enviornment.  
