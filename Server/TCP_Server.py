@@ -25,12 +25,13 @@ conn, addr = s.accept()
 #data = conn.recv(BufferSize)
 #print("Received from %s: %s" % (addr, data.decode('gb2312')))
 
-
+counter = 0
 while True:
     # 把客服端发送过来的数据又转发回去
     data = conn.recv(BufferSize)
     print("Received from %s: %s" % (addr, data.decode('gb2312')))
-    conn.sendall('I got it!'.encode('gb2312'))
+    counter += 1
+    conn.sendall('I got it! {}'.format(counter).encode('gb2312'))
     time.sleep(5)
 
     # 关闭客户端连接

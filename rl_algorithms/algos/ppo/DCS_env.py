@@ -1,4 +1,5 @@
 import socket
+import numpy as np
 
 class DCS_env:
     def __init__(self, host_ip='192.168.3.37', host_port=30000, size=1024):
@@ -17,7 +18,9 @@ class DCS_env:
         self.conn, self.addr = s.accept()
 
     def reset(self):
-        return
+        obserstr = self.conn.recv(self.BufferSize)
+        obs = self.observation_parser(obserstr)
+        return obs
 
     def step(self, a):
         #a = [1,2,3,4,5,6,7]
@@ -31,8 +34,22 @@ class DCS_env:
         # 把客服端发送过来的数据又转发回去
         self.conn.sendall(action.encode('gb2312'))
         print('successfully send action to client')
-        obserstr = self.conn.recv(self.BufferSize)
-        OurPlane, FriendPlane,Enemy1, Enemy2 = [], [], [], []
-        OurPlane =
+        next_obserstr = self.conn.recv(self.BufferSize)
+        next_obs, ourplane = self.observation_parser(next_obserstr)
+        rwd = self.reward(next_obserstr)
+        done = not next_obs[]
         # 关闭客户端连接
         # conn.colse()
+        return next_obs, rwd, done, 0
+
+    def observation_parser(self, obserstr):
+        OurPlane, FriendPlane, Enemy1, Enemy2 =
+        observation = OurPlane
+        observation.extend(FriendPlane)
+        observation.extend(Enemy1)
+        observation.extend(Enemy2)
+        return observation, OurPlane, FriendPlane, Enemy1, Enemy2
+
+    def reward(self, obserstr):
+        observation, OurPlane, FriendPlane, Enemy1, Enemy2 = self.observation_parser(obserstr)
+        rwd = -min(np.linalg.norm(OurPlane - Enemy1), np.linalg.norm(OurPlane - Enemy2))
