@@ -31,8 +31,11 @@ class DCS_env:
         # 把客服端发送过来的数据又转发回去
         self.conn.sendall(action.encode('gb2312'))
         print('successfully send action to client')
-        obserstr = self.conn.recv(self.BufferSize)
+        next_obserstr = self.conn.recv(self.BufferSize)
         OurPlane, FriendPlane,Enemy1, Enemy2 = [], [], [], []
         OurPlane =
         # 关闭客户端连接
         # conn.colse()
+    def reward(self):
+        rwd = -np.linalg.norm(self.getGroundTruth() - self.getTargetPos())
+    def obs_parser(self, obsstr):
