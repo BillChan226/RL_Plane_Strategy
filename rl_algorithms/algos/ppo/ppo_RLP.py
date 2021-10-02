@@ -3,11 +3,14 @@ import torch
 from torch.optim import Adam
 import gym
 import time
+import sys
+sys.path.append("/home/tete/work/RLP2021/")
+from DCS_environment import DCS_env
 import rl_algorithms.algos.ppo.core as core
 from rl_algorithms.utils.logx import EpochLogger
 from rl_algorithms.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
 from rl_algorithms.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
-import DCS_env
+
 
 
 class PPOBuffer:
@@ -208,7 +211,7 @@ def ppo(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
     # Instantiate environment
     assert env == 'RL_DCS'
-        env = env
+    env = DCS_env()
     obs_dim = env.observation_space.shape
     act_dim = env.action_space.shape
     print('obs_dim',obs_dim)
@@ -297,15 +300,15 @@ def ppo(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     # Prepare for interaction with environment
     start_time = time.time()
     o, ep_ret, ep_len = env.reset(), 0, 0
+    print('obser', o)
 
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in range(local_steps_per_epoch):
-
             a, v, logp = ac.step(torch.as_tensor(o, dtype=torch.float32))
             print('action',a)
             next_o, r, d, _ = env.step(a)
-            env.render()
+            #env.render()
             ep_ret += r
 
             ep_len += 1
@@ -320,11 +323,10 @@ def ppo(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             timeout = ep_len == max_ep_len
             terminal = d or timeout
             epoch_ended = t==local_steps_per_epoch-1
-            print('terminal',terminal)
-            print('done',d)
-            print('ep_len',ep_len)
+            #print('terminal',terminal)
+            #print('done',d)
+            #print('ep_len',ep_len)
             if terminal or epoch_ended:
-                
                 if epoch_ended and not(terminal):
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len, flush=True)
                 # if trajectory didn't reach terminal state, bootstrap value target
@@ -372,7 +374,7 @@ if __name__ == '__main__':
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=4)
+    parser.add_argument('--cpu', type=int, default=1)
     parser.add_argument('--steps', type=int, default=40000)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--exp_name', type=str, default='ppo')
