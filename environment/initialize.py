@@ -51,4 +51,4 @@ def init_origin(udpSelf, udpAlli, udpEnemy, bufsiz):
     globalparam.set_value('devX', float(devX))
     globalparam.set_value('devZ', float(devZ))
 
-    print(devX, devZ)
+    # print(devX, devZ)

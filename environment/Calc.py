@@ -46,4 +46,4 @@ def tans_coordinate(x, y, z):
     # 柱坐标系z
     height = float(y)
 
-    return radius, angle, height
+    return newX, newZ, radius, angle, height

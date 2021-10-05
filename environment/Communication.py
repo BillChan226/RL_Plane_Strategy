@@ -18,7 +18,7 @@ if __name__ == '__main__':
     globalparam.set_value('pi', 3.1415926)                                          # Π的值
     globalparam.set_value('isDebug', 0)                                             # 是否在调试
     globalparam.set_value('isPlaneOne', 1)                                          # 己方战机是否为一号战机
-    globalparam.set_value('isServerExist', 0)                                       # 是否有外部服务器进行训练
+    globalparam.set_value('isServerExist', 1)                                       # 是否有外部服务器进行训练
     globalparam.set_value('hostDataNum', 15)                                        # 己方战机数据总数
     globalparam.set_value('alliDataNum', 7)                                         # 友方战机数据总数
     globalparam.set_value('enemyDataNum', 7)                                        # 敌方战机数据总数
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         portCtrl = 21827        # 二号战机发送指令端口
 
     bufsiz = 1024               # 接收数据缓冲区大小
-    hostip = '192.168.88.229'     # 本机ip地址
+    hostip = '10.163.254.3'     # 本机ip地址
 
     # 设置UDP通信接收地址
     addrSelf = ('', portSelf)       # 己方战机UDP通信接收地址
@@ -92,7 +92,9 @@ if __name__ == '__main__':
         with multiprocessing.Manager() as MG:
             serverData = multiprocessing.Manager().list(range(1))
             ReceiveData = multiprocessing.Manager().list(range(1))
-            subPC = multiprocessing.Process(target = com_with_server, args = (serverData, ReceiveData))
+            StatusData = multiprocessing.Manager().list(range(1))
+            StatusData[0] = 'Process'
+            subPC = multiprocessing.Process(target = com_with_server, args = (serverData, ReceiveData, StatusData))
             subPC.start()
 
     # 接收UDP端口数据
@@ -116,7 +118,7 @@ if __name__ == '__main__':
             dataAlli = dataAlli.decode()
             dataEnemy = dataEnemy.decode()
 
-            print(dataSelf.split('@', 2)[0])
+            # print(dataSelf.split('@', 2)[0])
             # print('己方战机数据为%s' % dataSelf)
             # print('友方战机数据为%s' % dataAlli)
             # print('敌方战机数据为%s' % dataEnemy)
@@ -129,25 +131,40 @@ if __name__ == '__main__':
 
                 parseEngine.get_flight_data(dataSelf, dataAlli, dataEnemy)
 
-                # serverData[0] = parseEngine.encode_data()
+                serverData[0] = parseEngine.encode_data()
 
                 # print(serverData[0])
 
-                # if ReceiveData[0]:
-                #     udpCtrl.sendto(ReceiveData[0], addrCtrl)
-                #     ReceiveData[0] = 0
+                if ReceiveData[0]:
+                    # print(ReceiveData[0])
+                    udpCtrl.sendto(ReceiveData[0].encode(), addrCtrl)
+                    ReceiveData[0] = 0
 
-                udpCtrl.sendto('1@0,0,0,0,0,0,1'.encode(), addrCtrl)
+                # udpCtrl.sendto('1@0,0,0,0,0,0,1'.encode(), addrCtrl)
 
             else:
                 # print(dataSelf.split('@', 2)[0])
                 # print('己方战机数据为%s' % dataSelf)
                 # print('友方战机数据为%s' % dataAlli)
                 # print('敌方战机数据为%s' % dataEnemy)
+                # 因坠机而失败
+                # if str(ReceiveData[0]).split('@', 4)[0].split(':', 3)[2] < 20:
+                #     ReceiveData[0] = '0:0:-1@0:0:0@0:0:0@0:0:0'
+                # # 因撞边界而失败
+                # elif globalparam.get_value('r') > 10 * 1000 * globalparam.get_value('disScale'):
+                #     ReceiveData[0] = '0:0:-2@0:0:0@0:0:0@0:0:0'
+                # # 被击落或空中解体
+                # else:
+                #     ReceiveData[0] = '0:0:-3@0:0:0@0:0:0@0:0:0'
                 win32api.keybd_event(0x30, 0x0B, 0, 0)
                 win32api.keybd_event(0x30, 0x0B, win32con.KEYEVENTF_KEYUP, 0)
 
-                time.sleep(5)
+                # while True:
+                #     if StatusData[0] == 'Ready':
+                #         StatusData[0] = 'Process'
+                #         break
+
+                time.sleep(10)
 
                 win32api.keybd_event(0x1B, 0x01, 0, 0)
 
