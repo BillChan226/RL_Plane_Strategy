@@ -57,8 +57,7 @@ class DCS_env:
             trans = self.read_trans()
             _, ourplane, _, _, _ = self.obs_parser(trans)
             #print('ourplane', ourplane)
-            if ourplane[2] > 0: break
-        #print('lalalalala')
+            if ourplane[2] > 50: break
         next_obserstr = self.read_trans()
         initial_obs, _, _, _, _  = self.obs_parser(next_obserstr)
         print('successfully send reset command to client')
@@ -74,7 +73,7 @@ class DCS_env:
         #print('next_obserstr', next_obserstr)
         full_next_obs, next_ourplane, _, _, _ = self.obs_parser(next_obserstr)
         rwd = self.reward(next_obserstr)
-        done = 1 if next_ourplane[2] < 0 else 0
+        done = 1 if next_ourplane[2] < 20 else 0
         # 关闭客户端连接
         # conn.colse()
         return full_next_obs, rwd, done, 0
