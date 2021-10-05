@@ -82,30 +82,35 @@ class ParseData():
             print(self.disAlli, self.disEnemy1, self.disEnemy2)
 
         # 将各战机的原始坐标系转换为战场中心为轴的柱坐标系
-        self.radius_s, self.angle_s, self.height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
+        self.x_s, self.z_s, self.radius_s, self.angle_s, self.height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
 
         if self.status[0] == 1:
-            self.radius_a, self.angle_a, self.height_a = Calc.tans_coordinate(self.alliDataList[1], self.alliDataList[2], self.alliDataList[3])
+            self.x_a, self.z_a, self.radius_a, self.angle_a, self.height_a = Calc.tans_coordinate(self.alliDataList[1], self.alliDataList[2], self.alliDataList[3])
         else:
+            self.x_a = 0
+            self.z_a = 0
             self.radius_a = -1
             self.angle_a = -1
             self.height_a = -1
 
-        self.radius_e1, self.angle_e1, self.height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
+        self.x_e1, self.z_e1, self.radius_e1, self.angle_e1, self.height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
 
         if self.status[1] == 2:
-            self.radius_e2, self.angle_e2, self.height_e2 = Calc.tans_coordinate(self.enemy2DataList[1], self.enemy2DataList[2],
+            self.x_e2, self.z_e2, self.radius_e2, self.angle_e2, self.height_e2 = Calc.tans_coordinate(self.enemy2DataList[1], self.enemy2DataList[2],
                                                                   self.enemy2DataList[3])
         else:
+            self.x_e2 = 0
+            self.z_e2 = 0
             self.radius_e2 = -1
             self.angle_e2 = -1
             self.height_e2 = -1
+
+        globalparam.set_value('r', self.radius_e2)
 
         # print('我方战机的位置为%f, %f, %f' % (radius_s, angle_s, height_s))
         # print('友方战机的位置为%f, %f, %f' % (radius_a, angle_a, height_a))
         # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
         # print('二号敌机的位置为%f, %f, %f' % (radius_e2, angle_e2, height_e2))
-
 
 
         # elif self.status == [0, 2]:
@@ -182,11 +187,13 @@ class ParseData():
         #     # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
 
     def encode_data(self):
-        self.dtEncode = str(self.radius_s) + ':' + str(self.angle_s) + ':' + str(self.height_s) + '@' + \
-                        str(self.radius_a) + ':' + str(self.angle_a) + ':' + str(self.height_a) + '@' + \
-                        str(self.radius_e1) + ':' + str(self.angle_e1) + ':' + str(self.height_e1) + '@' + \
-                        str(self.radius_e2) + ':' + str(self.angle_e2) + ':' + str(self.height_e2)
+        self.dtEncode = str(self.x_s) + ':' + str(self.z_s) + ':' + str(self.height_s) + '@' + \
+                        str(self.x_a) + ':' + str(self.z_a) + ':' + str(self.height_a) + '@' + \
+                        str(self.x_e1) + ':' + str(self.z_e1) + ':' + str(self.height_e1) + '@' + \
+                        str(self.x_e2) + ':' + str(self.z_e2) + ':' + str(self.height_e2)
         return self.dtEncode
+
+
 
 
 
