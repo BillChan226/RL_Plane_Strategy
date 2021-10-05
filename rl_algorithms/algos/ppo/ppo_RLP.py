@@ -3,21 +3,14 @@ import torch
 from torch.optim import Adam
 import gym
 import time
-<<<<<<< HEAD:rl_algorithms/algos/ppo/ppo_RLP.py
-=======
 import sys
 sys.path.append("/home/tete/work/RLP2021/")
 from DCS_environment import DCS_env
->>>>>>> rl_deployment:rl_algorithms/algo/ppo/ppo_RLP.py
 import rl_algorithms.algos.ppo.core as core
 from rl_algorithms.utils.logx import EpochLogger
 from rl_algorithms.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
 from rl_algorithms.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
-<<<<<<< HEAD:rl_algorithms/algos/ppo/ppo_RLP.py
-import DCS_env
-=======
 
->>>>>>> rl_deployment:rl_algorithms/algo/ppo/ppo_RLP.py
 
 
 class PPOBuffer:
@@ -307,13 +300,13 @@ def ppo(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     # Prepare for interaction with environment
     start_time = time.time()
     o, ep_ret, ep_len = env.reset(), 0, 0
-    print('obser', o)
 
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in range(local_steps_per_epoch):
             a, v, logp = ac.step(torch.as_tensor(o, dtype=torch.float32))
             print('action',a)
+            print('step', t)
             next_o, r, d, _ = env.step(a)
             #env.render()
             ep_ret += r
