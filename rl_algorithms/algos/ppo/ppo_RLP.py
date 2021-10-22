@@ -3,21 +3,14 @@ import torch
 from torch.optim import Adam
 import gym
 import time
-<<<<<<< HEAD:rl_algorithms/algos/ppo/ppo_RLP.py
-=======
 import sys
 sys.path.append("/home/tete/work/RLP2021/")
 from DCS_environment import DCS_env
->>>>>>> rl_deployment:rl_algorithms/algo/ppo/ppo_RLP.py
 import rl_algorithms.algos.ppo.core as core
 from rl_algorithms.utils.logx import EpochLogger
 from rl_algorithms.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
 from rl_algorithms.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
-<<<<<<< HEAD:rl_algorithms/algos/ppo/ppo_RLP.py
-import DCS_env
-=======
 
->>>>>>> rl_deployment:rl_algorithms/algo/ppo/ppo_RLP.py
 
 
 class PPOBuffer:
@@ -307,13 +300,13 @@ def ppo(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     # Prepare for interaction with environment
     start_time = time.time()
     o, ep_ret, ep_len = env.reset(), 0, 0
-    print('obser', o)
 
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in range(local_steps_per_epoch):
             a, v, logp = ac.step(torch.as_tensor(o, dtype=torch.float32))
             print('action',a)
+            print('step', t)
             next_o, r, d, _ = env.step(a)
             #env.render()
             ep_ret += r
@@ -382,14 +375,14 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--cpu', type=int, default=1)
-    parser.add_argument('--steps', type=int, default=40000)
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--steps', type=int, default=200)
+    parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--exp_name', type=str, default='ppo')
     args = parser.parse_args()
 
     mpi_fork(args.cpu)  # run parallel code with mpi
 
-    from spinup.utils.run_utils import setup_logger_kwargs
+    from rl_algorithms.utils.run_utils import setup_logger_kwargs
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
     ppo(args.env, actor_critic=core.MLPActorCritic,
