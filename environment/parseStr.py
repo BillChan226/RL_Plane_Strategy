@@ -5,6 +5,7 @@
 
 import Calc
 import globalparam
+import numpy
 
 class ParseData():
     def __init__(self):
@@ -65,7 +66,7 @@ class ParseData():
         # 计算与友机的距离
         self.disAlli = Calc.calc_dis(self.hostDataList[1], self.alliDataList[1], self.hostDataList[2], \
                                          self.alliDataList[2], self.hostDataList[3], self.alliDataList[3]) \
-                                        if self.status[0] == 1 else 0
+                                        if self.status[0] == 1 else -1
 
         # 计算与一号敌机的距离
         self.disEnemy1 = Calc.calc_dis(self.hostDataList[1], self.enemy1DataList[1], self.hostDataList[2], \
@@ -74,124 +75,78 @@ class ParseData():
         # 计算与二号敌机的距离
         self.disEnemy2 = Calc.calc_dis(self.hostDataList[1], self.enemy2DataList[1], self.hostDataList[2], \
                                            self.enemy2DataList[2], self.hostDataList[3], self.enemy2DataList[3]) \
-                                            if self.status[0] == 1 else 0
+                                            if self.status[0] == 1 else -1
 
         # print("剩余航炮数为%d\n" % int(self.hostDataList[14]))
 
-        if globalparam.get_value('isDebug'):
-            print(self.disAlli, self.disEnemy1, self.disEnemy2)
+        # 己方战机的位置的用战场中心为轴的柱坐标系表示
+        self.x_s, self.z_s, self.radius_s, self.angle_s, self.height_s = Calc.tans_coordinate(self.hostDataList[1],\
+                                                                                              self.hostDataList[2],\
+                                                                                              self.hostDataList[3])
 
-        # 将各战机的原始坐标系转换为战场中心为轴的柱坐标系
-        self.x_s, self.z_s, self.radius_s, self.angle_s, self.height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
 
-        if self.status[0] == 1:
-            self.x_a, self.z_a, self.radius_a, self.angle_a, self.height_a = Calc.tans_coordinate(self.alliDataList[1], self.alliDataList[2], self.alliDataList[3])
-        else:
-            self.x_a = 0
-            self.z_a = 0
-            self.radius_a = -1
-            self.angle_a = -1
-            self.height_a = -1
+        # 建立以己方战机为原点的动态球坐标系
+        self.x_e1, self.z_e1, self.radius_e1, self.angle_e1, self.height_e1 = Calc.tans_coordinate(self.enemy1DataList[1],\
+                                                                                                    self.enemy1DataList[2],\
+                                                                                                    self.enemy1DataList[3])
 
-        self.x_e1, self.z_e1, self.radius_e1, self.angle_e1, self.height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
-
-        if self.status[1] == 2:
-            self.x_e2, self.z_e2, self.radius_e2, self.angle_e2, self.height_e2 = Calc.tans_coordinate(self.enemy2DataList[1], self.enemy2DataList[2],
-                                                                  self.enemy2DataList[3])
+        if self.enemy2DataList != [0, 0, 0, 0, 0, 0, 0]:
+            self.x_e2, self.z_e2, self.radius_e2, self.angle_e2, self.height_e2 = Calc.tans_coordinate(self.enemy2DataList[1],\
+                                                                                                        self.enemy2DataList[2],\
+                                                                                                        self.enemy2DataList[3])
         else:
             self.x_e2 = 0
             self.z_e2 = 0
-            self.radius_e2 = -1
-            self.angle_e2 = -1
-            self.height_e2 = -1
+            self.radius_e2 = 0
+            self.angle_e2 = 0
+            self.height_e2 = 0
 
-        globalparam.set_value('r', self.radius_e2)
-
-        # print('我方战机的位置为%f, %f, %f' % (radius_s, angle_s, height_s))
-        # print('友方战机的位置为%f, %f, %f' % (radius_a, angle_a, height_a))
-        # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
-        # print('二号敌机的位置为%f, %f, %f' % (radius_e2, angle_e2, height_e2))
-
-
-        # elif self.status == [0, 2]:
-        #     # 创建存活飞行的数据列表
-        #     self.hostDataList = selfdata.split('@', 2)[1].split(':', globalparam.get_value('hostDataNum'))
-        #     self.enemy1DataList = enemydata.split('@', 2)[1].split('&', 3)[0].split(':', globalparam.get_value('enemyDataNum'))
-        #     self.enemy2DataList = enemydata.split('@', 2)[1].split('&', 3)[1].split(':', globalparam.get_value('enemyDataNum'))
-        #
-        #     # 计算与一号敌机的距离
-        #     self.disEnemy1 = Calc.calc_dis(self.hostDataList[1], self.enemy1DataList[1], self.hostDataList[2], \
-        #                                    self.enemy1DataList[2], self.hostDataList[3], self.enemy1DataList[3])
-        #
-        #     # 计算与二号敌机的距离
-        #     self.disEnemy2 = Calc.calc_dis(self.hostDataList[1], self.enemy2DataList[1], self.hostDataList[2], \
-        #                                    self.enemy2DataList[2], self.hostDataList[3], self.enemy2DataList[3])
-        #     if globalparam.get_value('isDebug'):
-        #         print(self.disEnemy1, self.disEnemy2)
-        #
-        #     # 将各战机的原始坐标系转换为战场中心为轴的柱坐标系
-        #     radius_s, angle_s, height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
-        #     radius_e1, angle_e1, height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
-        #     radius_e2, angle_e2, height_e2 = Calc.tans_coordinate(self.enemy2DataList[1], self.enemy2DataList[2], self.enemy2DataList[3])
-        #
-        #     # print('我方战机的位置为%f, %f, %f' % (radius_s, angle_s, height_s))
-        #     # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
-        #     # print('二号敌机的位置为%f, %f, %f' % (radius_e2, angle_e2, height_e2))
-        #
-        #
-        # elif self.status == [1, 1]:
-        #     # 创建存活飞行的数据列表
-        #     self.hostDataList = selfdata.split('@', 2)[1].split(':', globalparam.get_value('hostDataNum'))
-        #     self.alliDataList = allidata.split('@', 2)[1].split('&', 2)[0].split(':', globalparam.get_value('alliDataNum'))
-        #     self.enemy1DataList = enemydata.split('@', 2)[1].split('&', 3)[0].split(':', globalparam.get_value('enemyDataNum'))
-        #
-        #
-        #     # 计算与友机的距离
-        #     self.disAlli = Calc.calc_dis(self.hostDataList[1], self.alliDataList[1], self.hostDataList[2], \
-        #                                  self.alliDataList[2], self.hostDataList[3], self.alliDataList[3])
-        #
-        #     # 计算与一号敌机的距离
-        #     self.disEnemy1 = Calc.calc_dis(self.hostDataList[1], self.enemy1DataList[1], self.hostDataList[2], \
-        #                                    self.enemy1DataList[2], self.hostDataList[3], self.enemy1DataList[3])
-        #
-        #     if globalparam.get_value('isDebug'):
-        #         print(self.disAlli, self.disEnemy1)
-        #
-        #     # 将各战机的原始坐标系转换为战场中心为轴的柱坐标系
-        #     radius_s, angle_s, height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
-        #     radius_a, angle_a, height_a = Calc.tans_coordinate(self.alliDataList[1], self.alliDataList[2], self.alliDataList[3])
-        #     radius_e1, angle_e1, height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
-        #
-        #     # print('我方战机的位置为%f, %f, %f' % (radius_s, angle_s, height_s))
-        #     # print('友方战机的位置为%f, %f, %f' % (radius_a, angle_a, height_a))
-        #     # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
-        #
-        #
+        # if self.status[0] == 1:
+        #     self.x_a, self.z_a, self.radius_a, self.angle_a, self.height_a = Calc.tans_coordinate(self.alliDataList[1], self.alliDataList[2], self.alliDataList[3])
         # else:
-        #     # 创建存活飞行的数据列表
-        #     self.hostDataList = selfdata.split('@', 2)[1].split(':', globalparam.get_value('hostDataNum'))
-        #     self.enemy1DataList = enemydata.split('@', 2)[1].split('&', 3)[0].split(':', globalparam.get_value('enemyDataNum'))
+        #     self.x_a = 0
+        #     self.z_a = 0
+        #     self.radius_a = -1
+        #     self.angle_a = -1
+        #     self.height_a = -1
+
+        # self.x_e1, self.z_e1, self.radius_e1, self.angle_e1, self.height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
         #
-        #     # 计算与一号敌机的距离
-        #     self.disEnemy1 = Calc.calc_dis(self.hostDataList[1], self.enemy1DataList[1], self.hostDataList[2], \
-        #                                    self.enemy1DataList[2], self.hostDataList[3], self.enemy1DataList[3])
-        #
-        #     if globalparam.get_value('isDebug'):
-        #         print(self.disEnemy1)
-        #
-        #     # 将各战机的原始坐标系转换为战场中心为轴的柱坐标系
-        #     radius_s, angle_s, height_s = Calc.tans_coordinate(self.hostDataList[1], self.hostDataList[2], self.hostDataList[3])
-        #     radius_e1, angle_e1, height_e1 = Calc.tans_coordinate(self.enemy1DataList[1], self.enemy1DataList[2], self.enemy1DataList[3])
-        #
-        #     # print('我方战机的位置为%f, %f, %f' % (radius_s, angle_s, height_s))
-        #     # print('一号敌机的位置为%f, %f, %f' % (radius_e1, angle_e1, height_e1))
+        # if self.status[1] == 2:
+        #     self.x_e2, self.z_e2, self.radius_e2, self.angle_e2, self.height_e2 = Calc.tans_coordinate(self.enemy2DataList[1], self.enemy2DataList[2],
+        #                                                           self.enemy2DataList[3])
+        # else:
+        #     self.x_e2 = 0
+        #     self.z_e2 = 0
+        #     self.radius_e2 = -1
+        #     self.angle_e2 = -1
+        #     self.height_e2 = -1
+
+        # globalparam.set_value('r', self.radius_e2)
+
+    # def encode_data(self):
+    #     self.dtEncode = str(self.x_s) + ':' + str(self.z_s) + ':' + str(self.height_s) + '@' + \
+    #                     str(self.x_a) + ':' + str(self.z_a) + ':' + str(self.height_a) + '@' + \
+    #                     str(self.x_e1) + ':' + str(self.z_e1) + ':' + str(self.height_e1) + '@' + \
+    #                     str(self.x_e2) + ':' + str(self.z_e2) + ':' + str(self.height_e2)
+    #     return self.dtEncode
 
     def encode_data(self):
-        self.dtEncode = str(self.x_s) + ':' + str(self.z_s) + ':' + str(self.height_s) + '@' + \
-                        str(self.x_a) + ':' + str(self.z_a) + ':' + str(self.height_a) + '@' + \
+        self.dtEncode = str(self.x_s) + ':' + str(self.z_s) + ':' + str(self.height_s) + ':' + \
+                        str(self.hostDataList[4]) + ':' + str(self.hostDataList[5]) + ':' + str(self.hostDataList[6]) + ':' + \
+                        str(self.hostDataList[7]) + ':' + str(self.hostDataList[8]) + ':' + str(self.hostDataList[9]) + ':' + \
+                        str(self.hostDataList[10]) + ':' + str(self.hostDataList[11]) + ':' + str(self.hostDataList[12]) + ':' + \
+                        str(self.hostDataList[13]) + '@' + \
                         str(self.x_e1) + ':' + str(self.z_e1) + ':' + str(self.height_e1) + '@' + \
                         str(self.x_e2) + ':' + str(self.z_e2) + ':' + str(self.height_e2)
+
         return self.dtEncode
+
+    # def encode_data_log(self):
+    #     self.dtEncodelog = str(self.x_a) + ':' + str(self.z_a) + ':' + str(self.height_a) + '@' + \
+    #                     str(self.x_e1) + ':' + str(self.z_e1) + ':' + str(self.height_e1) + '@' + \
+    #                     str(self.x_e2) + ':' + str(self.z_e2) + ':' + str(self.height_e2)
+    #     return self.dtEncodelog
 
 
 

@@ -11,6 +11,7 @@ import win32con
 import multiprocessing
 import time
 from task import com_with_server
+from datalog import data_logger
 
 if __name__ == '__main__':
     # 初始化不变的全局变量
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         portCtrl = 21827        # 二号战机发送指令端口
 
     bufsiz = 1024               # 接收数据缓冲区大小
-    hostip = '10.163.254.3'     # 本机ip地址
+    hostip = '192.168.0.105'     # 本机ip地址
 
     # 设置UDP通信接收地址
     addrSelf = ('', portSelf)       # 己方战机UDP通信接收地址
@@ -93,12 +94,21 @@ if __name__ == '__main__':
             serverData = multiprocessing.Manager().list(range(1))
             ReceiveData = multiprocessing.Manager().list(range(1))
             StatusData = multiprocessing.Manager().list(range(1))
-            StatusData[0] = 'Process'
-            subPC = multiprocessing.Process(target = com_with_server, args = (serverData, ReceiveData, StatusData))
+            # StatusData[0] = 'Process'
+            subPC = multiprocessing.Process(target = com_with_server, args = (serverData, ReceiveData))
             subPC.start()
+
+    else:
+        count = 1
+        filepath = 'D:\\Planelog\\' + str(count)
+        file = open(filepath, 'w')
+
+    timecount = 1
+
 
     # 接收UDP端口数据
     while True:
+        # print(timecount)
 
         if not globalparam.get_value('isDebug'):
 
@@ -124,6 +134,7 @@ if __name__ == '__main__':
             # print('敌方战机数据为%s' % dataEnemy)
 
             if (float(dataSelf.split('@', 2)[0])) != -1.0 and (float(dataEnemy.split('@', 2)[0])) != -1.0:
+            # if (float(dataAlli.split('@', 2)[0])) != -1.0 and (float(dataEnemy.split('@', 2)[0])) != -1.0:
                 # print(dataSelf.split('@', 2)[0])
                 # print('己方战机数据为%s' % dataSelf)
                 # print('友方战机数据为%s' % dataAlli)
@@ -131,16 +142,20 @@ if __name__ == '__main__':
 
                 parseEngine.get_flight_data(dataSelf, dataAlli, dataEnemy)
 
-                serverData[0] = parseEngine.encode_data()
+                if globalparam.get_value('isServerExist') == 1:
+                    serverData[0] = parseEngine.encode_data()
 
                 # print(serverData[0])
 
-                if ReceiveData[0]:
-                    # print(ReceiveData[0])
-                    udpCtrl.sendto(ReceiveData[0].encode(), addrCtrl)
-                    ReceiveData[0] = 0
+                    if ReceiveData[0]:
+                        # print(ReceiveData[0])
+                        udpCtrl.sendto(ReceiveData[0].encode(), addrCtrl)
+                        ReceiveData[0] = 0
 
-                # udpCtrl.sendto('1@0,0,0,0,0,0,1'.encode(), addrCtrl)
+                else:
+                    logdata = parseEngine.encode_data_log()
+                    data_logger(file, logdata)
+
 
             else:
                 # print(dataSelf.split('@', 2)[0])
@@ -148,14 +163,16 @@ if __name__ == '__main__':
                 # print('友方战机数据为%s' % dataAlli)
                 # print('敌方战机数据为%s' % dataEnemy)
                 # 因坠机而失败
-                # if str(ReceiveData[0]).split('@', 4)[0].split(':', 3)[2] < 20:
-                #     ReceiveData[0] = '0:0:-1@0:0:0@0:0:0@0:0:0'
-                # # 因撞边界而失败
-                # elif globalparam.get_value('r') > 10 * 1000 * globalparam.get_value('disScale'):
-                #     ReceiveData[0] = '0:0:-2@0:0:0@0:0:0@0:0:0'
-                # # 被击落或空中解体
-                # else:
-                #     ReceiveData[0] = '0:0:-3@0:0:0@0:0:0@0:0:0'
+                # print(serverData[0])
+                if float((serverData[0]).split('@', 4)[0].split(':', 3)[2]) < 30.0:
+                     serverData[0] = '0:0:-1:0:0:0:0:0:0:0:0:0:0@0:0:0@0:0:0@0:0:0'
+                # 因撞边界而失败
+                elif globalparam.get_value('r') > 10 * 1000 * globalparam.get_value('disScale'):
+                     serverData[0] = '0:0:-2:0:0:0:0:0:0:0:0:0:0@0:0:0@0:0:0@0:0:0'
+                # 被击落
+                else:
+                     serverData[0] = '0:0:-3:0:0:0:0:0:0:0:0:0:0@0:0:0@0:0:0@0:0:0'
+
                 win32api.keybd_event(0x30, 0x0B, 0, 0)
                 win32api.keybd_event(0x30, 0x0B, win32con.KEYEVENTF_KEYUP, 0)
 
@@ -166,12 +183,21 @@ if __name__ == '__main__':
 
                 time.sleep(10)
 
+                timecount += 1
+
+                if globalparam.get_value('isServerExist') == 0:
+                    file.close()
+                    count += 1
+                    filepath = 'D:\\Planelog\\' + str(count)
+                    file = open(filepath, 'w')
+
                 win32api.keybd_event(0x1B, 0x01, 0, 0)
 
                 win32api.keybd_event(0x1B, 0x01, win32con.KEYEVENTF_KEYUP, 0)
 
                 #  飞机坠毁，重置状态标志
                 restart = 1
+
 
         else:
             dataSelf = '0.1@16778240:-288372.64540332:1999.2688590855:604732.6754663:6.195529319346:0.068854615092278:8.7469419440822e-07:179.19110107422:-0.057070199400187:-15.747104644775:1.2650721146201e-05:-1.9459616851236e-06:-0.007682628929615:3.9632575511932:250'

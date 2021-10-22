@@ -83,10 +83,10 @@ import paramiko
 
 
 
-def com_with_server(serverData, ReceiveData, StatusData):
+def com_with_server(serverData, ReceiveData):
     serverIP = '120.55.81.165'
     serverPort = 51797
-    TCPPort = 54585
+    # TCPPort = 54585
 
 
 
@@ -104,7 +104,7 @@ def com_with_server(serverData, ReceiveData, StatusData):
     # print('7')
     trans = paramiko.SSHClient()
     trans.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    trans.connect(serverIP, serverPort, 'tete', 'inmoov213')
+    trans.connect(serverIP, serverPort, 'tete', 'INmoov213!')
     lastData = '123'
 
     while True:
@@ -120,16 +120,18 @@ def com_with_server(serverData, ReceiveData, StatusData):
         # data = trainingServer.recv(1024)
         # print('服务器发回的数据是%s' % data.decode())
 
-        if str(data.decode()) == 'Ready':
-            StatusData[0] = 'Ready'
-        else:
-            ReceiveData[0] = data.decode()
-        # print(ReceiveData[0])
+        # if str(data.decode()) == 'Ready':
+        #     StatusData[0] = 'Ready'
+        # else:
+        # print(data.decode())
+        ReceiveData[0] = data.decode()
 
         if lastData != serverData[0]:
+            # print(lastData)
+
             file = open(localpathOb, 'wb+')
 
-            print('本地数据为%s' % serverData[0])
+            # print('本地数据为%s' % serverData[0])
 
             file.write(serverData[0].encode())
 
